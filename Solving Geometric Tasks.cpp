@@ -67,7 +67,6 @@ bool sides_parallel_to_axes(dot* square_dots)
 
 void create_dots_rand(dot* dots)
 {
-    srand(time(NULL));
     for (int i = 0; i < 10; i++)
     {
         dots[i].x = rand() % 1001 - 500;
@@ -82,8 +81,18 @@ void create_dots_from_keyboard(dot* dots)
     {
         printf("Введите X для точки №%i: ", i + 1);
         scanf_s("%i", &dots[i].x);
+        while (dots[i].x < -500 || dots[i].x > 500)
+        {
+            printf("[Ошибка]: координаты точки могут быть от -500 до 500 включительно. Введите X для точки №%i: ", i + 1);
+            scanf_s("%i", &dots[i].x);
+        }
         printf("Введите Y для точки №%i: ", i + 1);
         scanf_s("%i", &dots[i].y);
+        while (dots[i].x < -500 || dots[i].x > 500)
+        {
+            printf("[Ошибка]: координаты точки могут быть от -500 до 500 включительно. Введите X для точки №%i: ", i + 1);
+            scanf_s("%i", &dots[i].x);
+        }
     }
 }
 
@@ -96,11 +105,10 @@ void create_dots_from_file(dot* dots, const char* filename)
         exit(1);
     }
     int number = 0;
-    srand(time(NULL));
     for (int i = 0; i < 20; i++)
     {
         number = 0;
-        if (fscanf(file, "%i", &number) == 1)
+        if (fscanf(file, "%i", &number) == 1 && (number >= -500 && number <= 500))
         {
             if (i % 2)
             {
