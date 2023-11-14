@@ -11,12 +11,8 @@
 #pragma warning(disable: 4996)
 
 #define ESC 27
-#define PLUS 61
-#define MINUS 45
-#define UP 72
-#define DOWN 80
-#define LEFT 75
-#define RIGHT 77
+#define ENTER 13
+#define DELTA 50
 
 typedef struct
 {
@@ -32,9 +28,15 @@ HBRUSH hOldBrush;
 HBRUSH hBrushWhite = CreateSolidBrush(RGB(255, 255, 255));
 HPEN hPenBlack = CreatePen(PS_SOLID, 5, RGB(0, 0, 0));
 HPEN hPenRed = CreatePen(PS_SOLID, 5, RGB(255, 0, 0));
+HPEN hPenGrey = CreatePen(PS_SOLID, 3, RGB(71, 74, 81));
 HPEN hPenGreen = CreatePen(PS_SOLID, 5, RGB(0, 255, 0));
 HPEN hPenBlue = CreatePen(PS_SOLID, 5, RGB(0, 0, 255));
-HPEN hPenGrey = CreatePen(PS_SOLID, 3, RGB(71, 74, 81));
+HPEN hPenCyan = CreatePen(PS_SOLID, 5, RGB(0, 255, 255));
+HPEN hPenPurple = CreatePen(PS_SOLID, 5, RGB(128, 0, 128));
+HPEN hPenOrange = CreatePen(PS_SOLID, 5, RGB(255, 165, 0));
+HPEN hPenPink = CreatePen(PS_SOLID, 5, RGB(255, 192, 203));
+HPEN hPenBrown = CreatePen(PS_SOLID, 5, RGB(139, 69, 19));
+HPEN hPenColors[7] = { hPenGreen, hPenBlue, hPenCyan, hPenPurple, hPenOrange, hPenPink, hPenBrown };
 HFONT hFont;
 HFONT hOldFont;
 LOGFONT Lf = { 0 };
@@ -133,65 +135,65 @@ bool in_square(dot* square_dots, dot* dot)
     return result;
 }
 
-void print_axes(int x_start, int x_end, int y_start, int y_end, int delta)
+void print_axes()
 {
     int i = 0;
     int coord = 0;
-    int horizontal_center = x_end / 2;
-    int vertical_center = y_end / 2;
+    int horizontal_center = (Rect.right - Rect.left) / 2 + 500;
+    int vertical_center = Rect.bottom / 2;
     CHAR S[10];
     SelectObject(hDC, hBrushWhite);
-    Rectangle(hDC, 0, 0, x_end, y_end);
+    Rectangle(hDC, Rect.left, Rect.top, Rect.right, Rect.bottom);
     SelectObject(hDC, hPenBlack);
     MoveToEx(hDC, horizontal_center, Rect.top, NULL);
     LineTo(hDC, horizontal_center, Rect.bottom);
-    TextOut(hDC, x_end - 16, vertical_center, (LPCSTR)"X", strlen("X"));
+    TextOut(hDC, Rect.right - 16, vertical_center, (LPCSTR)"X", strlen("X"));
     TextOut(hDC, horizontal_center, vertical_center, (LPCSTR)"0", strlen("0"));
     MoveToEx(hDC, 0, vertical_center, NULL);
-    LineTo(hDC, x_end, vertical_center);
-    TextOut(hDC, horizontal_center, y_start, (LPCSTR)"Y", strlen("Y"));
+    LineTo(hDC, Rect.right, vertical_center);
+    TextOut(hDC, horizontal_center, Rect.top, (LPCSTR)"Y", strlen("Y"));
     SelectObject(hDC, hPenGrey);
-    for (i = horizontal_center + delta; i < x_end; i += delta)
+    for (i = horizontal_center + DELTA; i < Rect.right; i += DELTA)
     {
-        MoveToEx(hDC, i, y_start, NULL);
-        LineTo(hDC, i, y_end);
-        coord += delta;
+        MoveToEx(hDC, i, Rect.top, NULL);
+        LineTo(hDC, i, Rect.bottom);
+        coord += DELTA;
         sprintf_s(S, "%i", coord);
         TextOut(hDC, i, vertical_center, (LPCSTR)S, strlen(S));
     }
     coord = 0;
-    for (i = horizontal_center - delta; i > x_start; i -= delta)
+    for (i = horizontal_center - DELTA; i > Rect.left; i -= DELTA)
     {
-        MoveToEx(hDC, i, y_start, NULL);
-        LineTo(hDC, i, y_end);
-        coord += delta;
+        MoveToEx(hDC, i, Rect.top, NULL);
+        LineTo(hDC, i, Rect.bottom);
+        coord += DELTA;
         sprintf_s(S, "%i", -1 * coord);
         TextOut(hDC, i, vertical_center, (LPCSTR)S, strlen(S));
     }
     coord = 0;
-    for (i = vertical_center - delta; i > y_start; i -= delta)
+    for (i = vertical_center - DELTA; i > Rect.top; i -= DELTA)
     {
-        MoveToEx(hDC, x_start, i, NULL);
-        LineTo(hDC, x_end, i);
-        coord += delta;
+        MoveToEx(hDC, Rect.left, i, NULL);
+        LineTo(hDC, Rect.right, i);
+        coord += DELTA;
         sprintf_s(S, "%i", coord);
         TextOut(hDC, horizontal_center, i, (LPCSTR)S, strlen(S));
     }
     coord = 0;
-    for (i = vertical_center + delta; i < y_end; i += delta)
+    for (i = vertical_center + DELTA; i < Rect.bottom; i += DELTA)
     {
-        MoveToEx(hDC, x_start, i, NULL);
-        LineTo(hDC, x_end, i);
-        coord += delta;
+        MoveToEx(hDC, Rect.left, i, NULL);
+        LineTo(hDC, Rect.right, i);
+        coord += DELTA;
         sprintf_s(S, "%i", -1 * coord);
         TextOut(hDC, horizontal_center, i, (LPCSTR)S, strlen(S));
     }
 }
 
-void print_square(dot* square_dots, int x_end, int y_end)
+void print_square(dot* square_dots)
 {
-    int horizontal_center = x_end / 2;
-    int vertical_center = y_end / 2;
+    int horizontal_center = (Rect.right - Rect.left) / 2 + 500;
+    int vertical_center = Rect.bottom / 2;
     SelectObject(hDC, hPenRed);
     MoveToEx(hDC, horizontal_center + square_dots[0].x, vertical_center - square_dots[0].y, NULL);
     LineTo(hDC, horizontal_center + square_dots[1].x, vertical_center - square_dots[1].y);
@@ -200,33 +202,28 @@ void print_square(dot* square_dots, int x_end, int y_end)
     LineTo(hDC, horizontal_center + square_dots[0].x, vertical_center - square_dots[0].y);
 }
 
-void print_dots(dot* square_dots, dot* dots, int x_end, int y_end)
+void print_dots(dot* square_dots, dot* dots, HPEN dots_color_in_square, HPEN dots_color_out_square)
 {
-    int horizontal_center = x_end / 2;
-    int vertical_center = y_end / 2;
+    int horizontal_center = (Rect.right - Rect.left) / 2 + 500;
+    int vertical_center = Rect.bottom / 2;
     for (int i = 0; i < 10; i++)
     {
         if (in_square(square_dots, &dots[i]))
         {
-            SelectObject(hDC, hPenGreen);
+            SelectObject(hDC, dots_color_in_square);
         }
         else
         {
-            SelectObject(hDC, hPenBlue);
+            SelectObject(hDC, dots_color_out_square);
         }
-        Ellipse(hDC, horizontal_center + (dots[i].x - 3), vertical_center - (dots[i].y), horizontal_center + (dots[i].x + 3), vertical_center - (dots[i].y + 3));
+        Ellipse(hDC, horizontal_center + (dots[i].x - 5), vertical_center - (dots[i].y), horizontal_center + (dots[i].x + 5), vertical_center - (dots[i].y + 5));
     }
-}
-
-void clear_screen()
-{
-    SelectObject(hDC, hBrushWhite);
-    Rectangle(hDC, 0, 0, 4000, 2200);
 }
 
 int main()
 {
     setlocale(LC_ALL, "Russian");
+    srand(time(NULL));
     Lf.lfHeight = 16;
     Lf.lfWeight = 900;
     Lf.lfWidth = 8;
@@ -237,9 +234,12 @@ int main()
     SetTextColor(hDC, RGB(0, 0, 0));
     SetBkColor(hDC, RGB(255, 255, 255));
     GetClientRect(hWnd, &Rect);
+    Rect.right += 500;
+    Rect.left += 500;
     dot square_dots[4];
+    int i = 0;
     printf("Введите точки углов квадрата:\n");
-    for (int i = 0; i < 4; i++)
+    for (i = 0; i < 4; i++)
     {
         printf("Введите X для точки №%i: ", i + 1);
         scanf_s("%i", &square_dots[i].x);
@@ -297,8 +297,7 @@ int main()
             break;
         }
     }
-
-    for (int i = 0; i < 10; i++)
+    for (i = 0; i < 10; i++)
     {
         if (in_square(&square_dots[0], &dots[i]))
         {
@@ -311,68 +310,25 @@ int main()
         printf("X: %i\n", dots[i].x);
         printf("Y: %i\n\n", dots[i].y);
     }
-    int x_start = Rect.left;
-    int x_end = Rect.right;
-    int y_start = Rect.top;
-    int y_end = Rect.bottom;
-    int delta = 50;
     int key = 0;
+    HPEN dots_color_in_square = hPenGreen;
+    HPEN dots_color_out_square = hPenBlue;
     do
     {
+        print_axes();
+        print_square(&square_dots[0]);
+        print_dots(&square_dots[0], &dots[0], dots_color_in_square, dots_color_out_square);
         key = _getch();
-        switch (key)
+        if (key == ENTER)
         {
-            case PLUS:
+            do
             {
-                x_start += 50;
-                x_end -= 50;
-                y_start += 50;
-                y_end -= 50;
-                delta += 50;
-                break;
-            }
-            case MINUS:
-            {
-                if ((delta - 50) <= 0)
-                {
-                    x_start -= 50;
-                    x_end += 50;
-                    y_start -= 50;
-                    y_end += 50;
-                    delta -= 50;
-                }
-                break;
-            }
-            case UP:
-            {
-                y_start -= 50;
-                y_end -= 50;
-                break;
-            }
-            case DOWN:
-            {
-                y_start += 50;
-                y_end += 50;
-                break;
-            }
-            case LEFT:
-            {
-                x_start -= 100;
-                x_end -= 100;
-                break;
-            }
-            case RIGHT:
-            {
-                x_start += 100;
-                x_end += 100;
-                break;
-            }
+                i = rand() % 7;
+                dots_color_in_square = hPenColors[i];
+                i = rand() % 7;
+                dots_color_out_square = hPenColors[i];
+            } while (dots_color_in_square == dots_color_out_square);
         }
-        clear_screen();
-        print_axes(x_start, x_end, y_start, y_end, delta);
-        print_square(&square_dots[0], x_end, y_end);
-        print_dots(&square_dots[0], &dots[0], x_end, y_end);
     } while (key != ESC);
-    _getch();
     return 0;
 }
